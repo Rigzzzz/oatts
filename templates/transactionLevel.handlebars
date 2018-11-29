@@ -1,21 +1,52 @@
 it('{{testLevelDescription}}', function() {
-            var response = request('{{op}}', '{{scheme}}://{{host}}{{path}}', { {{#if (notEmptyObject query)}}
-                'qs': {{json query}},{{/if}}{{#if (notEmptyObject body)}}
-                'body': {{json body}},{{/if}}{{#if (notEmptyObject formData)}}
-                'formData': {{json formData}},{{/if}}{{#if (notEmptyObject headers)}}
-                'headers': {{json headers}},{{/if}}
-                'time': true
-            });
-
-            {{#if (isNotDefaultStatusCode expected.statusCode)}}
-            expect(response).to.have.status({{expected.statusCode}});
-            {{/if}}
+        {{!-- {{isSuccess expected.statusCode}} --}}    
+            var responses = [];
+            var responsesCopies = [];
+            var expectedCopies = [];
+            var paths = [];
+            var validationExcludedAttributes = {{json validationExcludedAttributes}};
             {{#if expected.res}}
             {{#if hasValue}}
-            expect(response).to.comprise.of.json({{json expected.res}});
+            {{#each expected.res}}
+
+            {{#hasBody ../op}}
+            responses[{{@index}}] = request('{{../op}}', '{{../host}}{{../basePath}}{{handlePath ../subPath ../pathParams @key}}', { {{#if (notEmptyObject ../query)}}
+                'qs': {{handleQueryParams ../query @key}},{{/if}}{{#if (notEmptyObject ../body)}}
+                'body': {{json (lookup ../body @key)}},{{/if}}{{#if (notEmptyObject ../formData)}}
+                'formData': {{json ../formData}},{{/if}}{{#if (notEmptyObject ../headers)}}
+                'headers': {{json ../headers}},{{/if}}
+                'time': true
+            }).then((res) => {
+                const results = removeExcludedKeys(res.body, validationExcludedAttributes);
+                const nodes = results.nodes;
+                responsesCopies[{{@index}}] = results.copy;
+                expectedCopies[{{@index}}] = removeExcludedKeys({{json this}}, validationExcludedAttributes).copy;
+                expect(responsesCopies[{{@index}}]).json(expectedCopies[{{@index}}]);
+                nodes.forEach((node) => {
+                    if (['object', 'array'].indexOf(validationExcludedAttributes[node.path[node.path.length - 1]]) !== -1) {
+                        expect(node.value).to.be.an(validationExcludedAttributes[node.path[node.path.length - 1]]);
+                    } else {
+                        expect(node.value).to.be.a(validationExcludedAttributes[node.path[node.path.length - 1]]);
+                    }
+                });        
+            });
             {{else}}
-            expect(response).to.have.schema({{json expected.res}});
+            responses[{{@index}}] = request('{{../op}}', '{{../host}}{{../basePath}}{{handlePath ../subPath ../pathParams @key}}', { {{#if (notEmptyObject ../query)}}
+                'qs': {{handleQueryParams ../query @key}},{{/if}}{{#if (notEmptyObject ../body)}}
+                'body': {{json (lookup ../body @key)}},{{/if}}{{#if (notEmptyObject ../formData)}}
+                'formData': {{json ../formData}},{{/if}}{{#if (notEmptyObject ../headers)}}
+                'headers': {{json ../headers}},{{/if}}
+                'time': true
+            });
+            expect(responses[{{@index}}]).json({{json this}});
+            {{/hasBody}}
+
+            {{#if (isNotDefaultStatusCode expected.statusCode)}}
+            expect(responses[{{@index}}]).to.have.status({{../expected.statusCode}});
+            {{/if}}
+
+            {{/each}}
             {{/if}}
             {{/if}}
             return chakram.wait();
-        });
+});
