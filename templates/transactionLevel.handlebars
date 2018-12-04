@@ -1,14 +1,13 @@
 it('{{testLevelDescription}}', function() {
         {{!-- {{isSuccess expected.statusCode}} --}}    
+            {{#if (notEmptyObject expected.res)}}
             var responses = [];
             var responsesCopies = [];
             var expectedCopies = [];
             var paths = [];
             var validationExcludedAttributes = {{json validationExcludedAttributes}};
-            {{#if expected.res}}
             {{#if hasValue}}
             {{#each expected.res}}
-
             {{#hasBody ../op}}
             responses[{{@index}}] = request('{{../op}}', '{{../host}}{{../basePath}}{{handlePath ../subPath ../pathParams @key}}', { {{#if (notEmptyObject ../query)}}
                 'qs': {{handleQueryParams ../query @key}},{{/if}}{{#if (notEmptyObject ../body)}}
@@ -40,13 +39,22 @@ it('{{testLevelDescription}}', function() {
             });
             expect(responses[{{@index}}]).json({{json this}});
             {{/hasBody}}
-
             {{#if (isNotDefaultStatusCode expected.statusCode)}}
             expect(responses[{{@index}}]).to.have.status({{../expected.statusCode}});
             {{/if}}
-
             {{/each}}
+            {{else}}
+            TEST
             {{/if}}
+            {{else}}
+            var response = request('{{op}}', '{{host}}{{basePath}}{{subPath}}', { {{#if (notEmptyObject query)}}
+                'qs': {{json query}},{{/if}}{{#if (notEmptyObject body)}}
+                'body': {{json (getValidExample body)}},{{/if}}{{#if (notEmptyObject formData)}}
+                'formData': {{json formData}},{{/if}}{{#if (notEmptyObject headers)}}
+                'headers': {{json headers}},{{/if}}
+                'time': true
+            });
+            expect(response).to.have.status({{expected.statusCode}})
             {{/if}}
             return chakram.wait();
 });
