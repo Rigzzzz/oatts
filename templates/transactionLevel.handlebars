@@ -1,11 +1,10 @@
 it('{{testLevelDescription}}', function() {
         {{!-- {{isSuccess expected.statusCode}} --}}    
             {{#if (notEmptyObject expected.res)}}
-            var responses = [];
-            var responsesCopies = [];
-            var expectedCopies = [];
-            var paths = [];
-            var validationExcludedAttributes = {{json validationExcludedAttributes}};
+            const responses = [];
+            const responsesCopies = [];
+            const expectedCopies = [];
+            const validationExcludedAttributes = {{json validationExcludedAttributes}};
             {{#if hasValue}}
             {{#each expected.res}}
             {{#hasBody ../op}}
@@ -14,7 +13,7 @@ it('{{testLevelDescription}}', function() {
                 'body': {{json (lookup ../body @key)}},{{/if}}{{#if (notEmptyObject ../formData)}}
                 'formData': {{json ../formData}},{{/if}}{{#if (notEmptyObject ../headers)}}
                 'headers': {{json ../headers}},{{/if}}
-                'time': true
+                'time': true,
             }).then((res) => {
                 const results = removeExcludedKeys(res.body, validationExcludedAttributes);
                 const nodes = results.nodes;
@@ -35,7 +34,7 @@ it('{{testLevelDescription}}', function() {
                 'body': {{json (lookup ../body @key)}},{{/if}}{{#if (notEmptyObject ../formData)}}
                 'formData': {{json ../formData}},{{/if}}{{#if (notEmptyObject ../headers)}}
                 'headers': {{json ../headers}},{{/if}}
-                'time': true
+                'time': true,
             });
             expect(responses[{{@index}}]).json({{json this}});
             {{/hasBody}}
@@ -43,18 +42,16 @@ it('{{testLevelDescription}}', function() {
             expect(responses[{{@index}}]).to.have.status({{../expected.statusCode}});
             {{/if}}
             {{/each}}
-            {{else}}
-            TEST
             {{/if}}
             {{else}}
-            var response = request('{{op}}', '{{host}}{{basePath}}{{subPath}}', { {{#if (notEmptyObject query)}}
+            const response = request('{{op}}', '{{host}}{{basePath}}{{subPath}}', { {{#if (notEmptyObject query)}}
                 'qs': {{json query}},{{/if}}{{#if (notEmptyObject body)}}
                 'body': {{json (getValidExample body)}},{{/if}}{{#if (notEmptyObject formData)}}
                 'formData': {{json formData}},{{/if}}{{#if (notEmptyObject headers)}}
                 'headers': {{json headers}},{{/if}}
-                'time': true
+                'time': true,
             });
-            expect(response).to.have.status({{expected.statusCode}})
+            expect(response).to.have.status({{expected.statusCode}});
             {{/if}}
             return chakram.wait();
 });
