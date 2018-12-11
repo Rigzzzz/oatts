@@ -2,12 +2,12 @@ it('{{testLevelDescription}}', function() {
         {{!-- {{isSuccess expected.statusCode}} --}}    
             {{#if (notEmptyObject expected.res)}}
             const responses = [];
-            const responsesCopies = [];
-            const expectedCopies = [];
-            const validationExcludedAttributes = {{json validationExcludedAttributes}};
             {{#if hasValue}}
             {{#each expected.res}}
             {{#hasBody ../op}}
+            const responsesCopies = [];
+            const expectedCopies = [];
+            const validationExcludedAttributes = {{json ../validationExcludedAttributes}};
             responses[{{@index}}] = request('{{../op}}', '{{../host}}{{../basePath}}{{handlePath ../subPath ../pathParams @key}}', { {{#if (notEmptyObject ../query)}}
                 'qs': {{handleQueryParams ../query @key}},{{/if}}{{#if (notEmptyObject ../body)}}
                 'body': {{json (lookup ../body @key)}},{{/if}}{{#if (notEmptyObject ../formData)}}
@@ -54,4 +54,4 @@ it('{{testLevelDescription}}', function() {
             expect(response).to.have.status({{expected.statusCode}});
             {{/if}}
             return chakram.wait();
-});
+        });
